@@ -8,6 +8,7 @@ import time
 import os
 from utils_gamma import *
 import surgery as Surgery
+from evaluate import *
 
 
 ########################################################################
@@ -385,7 +386,7 @@ class aStarNormalize(StarNormalize):
             print("Not connected graph detected, compute on the largest connected component instead.")
             self.G = nx.Graph(max([self.G.subgraph(c) for c in nx.connected_components(self.G)], key=len))
             print('---------------------------')
-            print(nx.info(self.G))
+            # print(self.G)
 
         self.G.remove_edges_from(nx.selfloop_edges(self.G))
         
@@ -405,10 +406,13 @@ class aStarNormalize(StarNormalize):
 
         # Start the Ricci flow process
         self.rc_diff = []
+        ari = list()
+        nmi = list()
+        mod = list()
         for i in range(iterations):
+            self.lengths = self._get_all_pairs_shortest_path() # appears to be necessary for gexf imported graphs
             # Save current graph
             nx.write_gexf(self.G, os.path.join(save_gexf_dir, "%d.gexf"%i))
-            
             sum_K_W = sum(self.G[v1][v2]["ricciCurvature"] * self.G[v1][v2][self.weight] for (v1, v2) in self.G.edges())
             a = sum(self.G[v1][v2][self.weight] for (v1, v2) in self.G.edges())
             for (v1, v2) in self.G.edges():
@@ -426,7 +430,6 @@ class aStarNormalize(StarNormalize):
                         print("Contracted edge: (%d, %d)" % (v1,v2))
                         break
             self.G = G1
-
             self.compute_ricci_curvature()
             print("=== Ricciflow iteration % d ===" % i)
             
@@ -450,8 +453,14 @@ class aStarNormalize(StarNormalize):
 
             # clear the APSP and densities since the graph have changed.
             self.densities = {}
+            ari.append(ARI(self.G, nx.connected_components(self.G)))
+            nmi.append(NMI(self.G, nx.connected_components(self.G)))
+            mod.append(Modularity(self.G, nx.connected_components(self.G)))
 
         nx.write_gexf(self.G, os.path.join(save_gexf_dir, "%d.gexf"%iterations))
+        make_line_graph("ARI", ari)
+        make_line_graph("NMI", nmi)
+        make_line_graph("Modularity", mod)
 
         print("\n%8f secs for Ricci flow computation." % (time.time() - t0))
 

@@ -13,18 +13,20 @@ class DoRicciFlow:
         self.config = config
         self.model_name = model_name
         self.config_path = os.path.join('Configs', config)
+        # 2
         self.paths, self.local_data, self.graph_param, self.ricciflow_param, self.surgery_param  = load_config(self.config_path)
 
         # Initialize dirs
         if self.local_data:
             self.data_dir = get_graph_dir(self.paths['collection'], self.paths['file'])
+        # we enter this else
         else:
             self.data_dir = None
         self.save_gexf_dir = make_save_dir(self.paths['save_collection'], 'gexf')
         self.save_gexf_with_surgery_dir = make_dir(os.path.join(self.save_gexf_dir, self.model_name, 'with_surgery'))
         self.save_gexf_without_surgery_dir = make_dir(os.path.join(self.save_gexf_dir, self.model_name, 'without_surgery'))
 
-
+        # 1
         # Initialize graph
         self.G = Graph(self.graph_param['name'], self.graph_param['param'], self.data_dir).G
         self.G_origin = self.G.copy()
@@ -54,7 +56,7 @@ def main(argv=None):
     (options, args) = parser.parse_args(argv)
     if len(args) < 1:
         parser.print_help()
-        return 1
+        return 
 
     config = args[0]
     model_name = args[1]

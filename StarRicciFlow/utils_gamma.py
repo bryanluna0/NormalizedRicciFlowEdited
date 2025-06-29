@@ -6,7 +6,11 @@ import imageio
 from PIL import Image
 import pygraphviz as pg
 import networkx as nx
+import plotly.express as px
+import plotly.io as pio
+import pandas as pd
 
+# 3
 def load_config(config_path):
     f = open(config_path, 'r').read()
     config = json.loads(f)
@@ -37,14 +41,13 @@ def make_save_dir(collection, mode=None,rootpath=save_root):
     else:
         return make_dir(os.path.join(rootpath, collection))
 
-
 def DrawGraphWithEdgeLength(G_origin: nx.Graph(), file):
     G = pg.AGraph()
     G.add_nodes_from(G_origin.nodes())
     normalize = float(2 * int(G_origin.number_of_edges()))
     for e in G_origin.edges():
-        G.add_edge(e[0], e[1], len = float(normalize * G_origin[e[0]][e[1]]['weight']))
-    G.draw(file, format='png', prog='neato')
+        G.add_edge(e[0], e[1], len = float(normalize * G_origin[e[0]][e[1]]['weight'] / 100))
+    G.draw(file, format='svg', prog='neato')
 
 def create_gif(image_dir, save_name, resize=(400,400)):
     
@@ -62,3 +65,16 @@ def create_gif(image_dir, save_name, resize=(400,400)):
             frames.append(image)
     
     imageio.mimsave(save_name, frames, 'GIF', duration = 0.1)
+    
+def make_line_graph(eval, y_axis):
+    paths, local_data, graph_param, ricciflow_param, surgery_param = load_config(os.path.join('Configs', 'config.json'))
+    iterations = ricciflow_param["iterations"]
+    x_axis = list(range(iterations))
+    x_name = "iterations"
+    df = pd.DataFrame(dict(
+        x = x_axis,
+        y = y_axis
+    ))
+    graph_name = graph_param['name']
+    fig = px.line(df, x='x', y='y', title=graph_name + " " + eval, labels={"x": x_name, "y": eval})
+    pio.write_image(fig, graph_name + "_" + eval + ".png")

@@ -1,13 +1,13 @@
 {
 	"paths":{
-		"collection": null,
-                "file":null,
+		"collection": "karate",
+                "file":"karate.gexf",
 		"save_collection": "karate_club_n"
 	},
-	"local_data": false,
+	"local_data": true,
 	"graph_param": {
-		"name": "karate_club_graph",
-		"param":{"my_graph":false,"settings":{}}
+		"name": "karate",
+		"param":{"my_graph":true,"settings":{}}
 	},
 	"ricciflow": {
 		"iterations": 100,
